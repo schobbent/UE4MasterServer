@@ -55,7 +55,10 @@ USTRUCT(BlueprintType)
 struct FServerInformation
 {
 	GENERATED_USTRUCT_BODY()
-
+	
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server Information")
+		int32 GameId;
+		
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Server Information")
 		FString Name;
 
@@ -88,6 +91,7 @@ struct FServerInformation
 
 	void GetDataFromJSON(TSharedPtr<FJsonObject> JsonArray)
 	{
+		GameId = JsonArray->GetNumberField("game_id");
 		Name = JsonArray->GetStringField("name");
 		Ip = JsonArray->GetStringField("ip");
 		Port = JsonArray->GetStringField("port");
@@ -107,6 +111,7 @@ struct FServerInformation
 		OutJsonArray->SetStringField("map", Map);
 		OutJsonArray->SetNumberField("max_players", MaxPlayers);
 		OutJsonArray->SetNumberField("current_players", CurrentPlayers);
+		OutJsonArray->SetNumberField("game_id", GameId);
 
 		return OutJsonArray;
 	}
@@ -125,7 +130,7 @@ struct FServerInformation
 
 	FServerInformation()
 	{
-		Name = ""; Ip = ""; Port = ""; GameMode = ""; Map = ""; MaxPlayers = -1; CurrentPlayers = -1; Ping = -1;
+		GameId = 0; Name = ""; Ip = ""; Port = ""; GameMode = ""; Map = ""; MaxPlayers = -1; CurrentPlayers = -1; Ping = -1;
 	}
 };
 
@@ -234,6 +239,9 @@ private:
 	FHttpModule* Http;
 	FString TargetHost;
 	bool bIsBusy;
+	
+	/** GameID to filter servers received with */
+	int32 GameId;
 
 	/** Delegate for callbacks to Tick */
 	FTickerDelegate TickDelegate;
@@ -303,7 +311,7 @@ public:
 		FOnPingComplete ServerPingComplete;
 
 	UFUNCTION(BlueprintCallable, Category = "Networking")
-		void RequestServerList();
+		void RequestServerList(int32 gameId = 0);
 
 	FServerInformation CurrentRegisteredServer;
 	FTimerHandle CheckIn_Handle;
